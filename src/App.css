@@ -1,0 +1,67 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  background-color: #323737;
+  color: #ffffff;
+}
+
+main.feed__wrapper {
+  width: min(520px, 100%);
+  margin: 10px auto;
+}
+
+/*-------------------posts Listing Styles--------------*/
+.posts > h1 {
+  background-color: #3e4646;
+  border-bottom: 2px solid white;
+  padding: 5px 4px;
+  border-radius: 5px;
+  margin-bottom: 25px;
+}
+.posts article.post__wrapper {
+  border: 1px solid white;
+  border-radius: 5px;
+  margin: 10px;
+  padding: 5px;
+}
+.posts article.post__wrapper p.postcredit {
+  color: rgb(180, 180, 180);
+  font-size: 15px;
+  font-style: italic;
+  margin: 5px 0;
+  display: flex;
+  justify-content: space-between;
+}
+.posts article.post__wrapper h2 {
+  border-bottom: 2px solid white;
+  padding-bottom: 4px;
+  margin-bottom: 4px;
+}
+/*-------------------new post form Styles--------------*/
+section.newpost__wrapper {
+  margin: 10px;
+  padding: 5px;
+}
+section.newpost__wrapper .form__wrapper {
+  display: flex;
+  flex-direction: column;
+  /* width: 100%; */
+  margin: 10px 0;
+}
+.form__wrapper input,
+.form__wrapper textarea,
+.form__wrapper select {
+  border-radius: 5px;
+  margin-bottom: 8px;
+  padding: 6px 5px;
+}
+.form__wrapper textarea {
+  height: 150px;
+}
+.form__wrapper button {
+  padding: 10px;
+  font-size: 1rem;
+}

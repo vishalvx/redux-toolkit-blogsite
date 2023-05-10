@@ -1,37 +1,30 @@
-import { createSlice, nanoid } from "@reduxjs/toolkit";
+import {
+  createSlice,
+  nanoid,
+  createAsymcThunk,
+  createAsyncThunk,
+} from "@reduxjs/toolkit";
+import axios from "axios";
 import { sub } from "date-fns";
+import { postsUrl } from "../../utils/Urls";
+
+const POSTS_URL = postsUrl;
 
 //post initial State
-const initialState = [
-  {
-    id: "1",
-    title: "learning video",
-    content:
-      "Now we can use the React-Redux hooks to let React components interact with the Redux store. We can read data from the store with useSelector",
-    authorId: "1",
-    date: sub(new Date(), { minutes: 10 }).toISOString(),
-    reactions: {
-      thumpsup: 0,
-      wow: 0,
-      heart: 0,
-      rocket: 0,
-    },
-  },
-  {
-    id: "2",
-    title: "new video",
-    content:
-      " dispatch actions using useDispatch. Create a component inside, then import that component into App.js and render it inside of <App>.",
-    authorId: "1",
-    date: sub(new Date(), { minutes: 5 }).toISOString(),
-    reactions: {
-      thumpsup: 0,
-      wow: 0,
-      heart: 0,
-      rocket: 0,
-    },
-  },
-];
+const initialState = {
+  posts: [],
+  status: "idle", // 'idle' | 'loading' | 'succeeded' | 'failed'
+  error: null,
+};
+
+export const fetchPosts = createAsyncThunk("posts/fetchPosts", async () => {
+  try {
+    const response = await axios.get(POSTS_URL);
+    return response.data;
+  } catch (error) {
+    return error.message;
+  }
+});
 
 const postsSlice = createSlice({
   name: "posts",
@@ -45,7 +38,7 @@ const postsSlice = createSlice({
      */
     postAdded: {
       reducer(state, action) {
-        state.push(action.payload);
+        state.posts.push(action.payload);
       },
       /**
        * prepare use for preparing payload we and return to reducer
@@ -71,17 +64,46 @@ const postsSlice = createSlice({
     addReaction: {
       reducer(state, action) {
         const { reaction, postId } = action.payload;
-        const foundPost = state.find((post) => post.id == postId);
+        const foundPost = state.posts.find((post) => post.id == postId);
         if (foundPost) {
           foundPost.reactions[reaction]++;
         }
       },
     },
   },
+  //extraRducer
+  extraReducers(builder) {
+    builder
+      .addCase(fetchPosts.pending, (state, action) => {
+        state.status = "loading";
+      })
+      .addCase(fetchPosts.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        //add custum fields (date, reactions) in fetched data
+        let minutes = 1;
+        const loadedPosts = action.payload.map((post) => {
+          post.date = sub(new Date(), { minutes: minutes++ }).toISOString();
+          post.reactions = {
+            thumpsup: 0,
+            wow: 0,
+            heart: 0,
+            rocket: 0,
+          };
+          return post;
+        });
+        //adding in current state
+        state.posts = state.posts.concat(loadedPosts);
+      })
+      .addCase(fetchPosts.rejected, (state, action) => {
+        state.status = "failed";
+      });
+  },
 });
 
 //export selectors
-export const selectAllPosts = (state) => state.posts;
+export const selectAllPosts = (state) => state.posts.posts;
+export const getPostsStatus = (state) => state.posts.status;
+export const getPostsError = (state) => state.posts.error;
 
 //export Actions
 export const { postAdded, addReaction } = postsSlice.actions;

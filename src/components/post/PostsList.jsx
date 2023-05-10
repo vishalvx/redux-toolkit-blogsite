@@ -1,7 +1,12 @@
 import React from "react";
 import { useSelector } from "react-redux";
-//customs
-import { selectAllPosts } from "../../features/posts/postSlice";
+//customs Selector
+import {
+  selectAllPosts,
+  getPostsStatus,
+  getPostsError,
+} from "../../features/posts/postSlice";
+// components
 import PostAuthor from "./PostAuthor";
 import TimeAgo from "./TimeAgo";
 import ReactionButton from "./ReactionButton";

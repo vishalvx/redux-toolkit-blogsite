@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { postAdded } from "../../features/posts/postSlice";
 import { nanoid } from "@reduxjs/toolkit";
+import { addNewPost } from "../../features/posts/postSlice";
 import { selectAllUsers } from "../../features/users/usersSlice";
 const AddPostForm = () => {
   const dispatch = useDispatch();
@@ -11,8 +11,10 @@ const AddPostForm = () => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [authorId, setAuthorId] = useState("");
+  const [addRequestStatus, setAddRequestStatus] = useState("idle");
   // for can save
-  const canSave = Boolean(title) && Boolean(content) && Boolean(authorId);
+  const canSave =
+    [title, content, authorId].every(Boolean) && addRequestStatus === "idle";
   //handler
   const changeTitle = (e) => setTitle(e.target.value);
   const changeContent = (e) => setContent(e.target.value);
@@ -20,12 +22,21 @@ const AddPostForm = () => {
   //submit Handler
   const submitForm = () => {
     if (canSave) {
-      dispatch(postAdded(title, content, authorId));
-      console.log("done");
-      setContent("");
-      setTitle("");
-      setAuthorId("");
-      // console.log("done");
+      try {
+        setAddRequestStatus("pending");
+        dispatch(
+          addNewPost({ title, body: content, userId: authorId })
+        ).unwrap();
+
+        setContent("");
+        setTitle("");
+        setAuthorId("");
+        // console.log("done");
+      } catch (error) {
+        console.error("fail to save the post", error);
+      } finally {
+        setAddRequestStatus("idle");
+      }
     }
   };
   return (
@@ -47,7 +58,9 @@ const AddPostForm = () => {
         >
           <option value="">Please Select Author</option>
           {authors.map((author) => (
-            <option value={author.id}>{author.name}</option>
+            <option value={author.id} key={author.id}>
+              {author.name}
+            </option>
           ))}
         </select>
         <textarea

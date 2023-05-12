@@ -1,11 +1,7 @@
-import {
-  createSlice,
-  nanoid,
-  createAsymcThunk,
-  createAsyncThunk,
-} from "@reduxjs/toolkit";
+import { createSlice, nanoid, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { sub } from "date-fns";
+//custom
 import { postsUrl } from "../../utils/Urls";
 
 const POSTS_URL = postsUrl;
@@ -25,6 +21,17 @@ export const fetchPosts = createAsyncThunk("posts/fetchPosts", async () => {
     return error.message;
   }
 });
+export const addNewPost = createAsyncThunk(
+  "posts/addNewPost",
+  async (initialPost) => {
+    try {
+      const response = await axios.post(POSTS_URL, initialPost);
+      return response.data;
+    } catch (error) {
+      return error.message;
+    }
+  }
+);
 
 const postsSlice = createSlice({
   name: "posts",
@@ -48,8 +55,8 @@ const postsSlice = createSlice({
           payload: {
             id: nanoid(),
             title,
-            content,
-            authorId,
+            body: content,
+            userId: Number(authorId),
             date: new Date().toISOString(),
             reactions: {
               thumpsup: 0,
@@ -96,6 +103,19 @@ const postsSlice = createSlice({
       })
       .addCase(fetchPosts.rejected, (state, action) => {
         state.status = "failed";
+      })
+      .addCase(addNewPost.fulfilled, (state, action) => {
+        //add custum fields (date, reactions,converting to number userId) in fetched data
+        action.payload.userId = Number(action.payload.userId);
+        action.payload.date = new Date().toISOString();
+        action.payload.reactions = {
+          thumpsup: 0,
+          wow: 0,
+          heart: 0,
+          rocket: 0,
+        };
+        // console.log(action.payload);
+        state.posts.push(action.payload);
       });
   },
 });
